@@ -11,14 +11,14 @@ Clean Architecture template for Golang services
 [![License](https://img.shields.io/badge/License-MIT-success)](https://github.com/evrone/go-clean-template/blob/master/LICENSE)
 [![codecov](https://codecov.io/gh/evrone/go-clean-template/branch/master/graph/badge.svg?token=XE3E0X3EVQ)](https://codecov.io/gh/evrone/go-clean-template)
 
-[![Web Framework](https://img.shields.io/badge/Fiber-Web%20Framework-blue)](https://github.com/gofiber/fiber)
+[![Web Framework](https://img.shields.io/badge/Gin-Web%20Framework-blue)](https://github.com/gin-gonic/gin)
 [![API Documentation](https://img.shields.io/badge/Swagger-API%20Documentation-blue)](https://github.com/swaggo/swag)
 [![Validation](https://img.shields.io/badge/Validator-Data%20Integrity-blue)](https://github.com/go-playground/validator)
 [![JSON Handling](https://img.shields.io/badge/Go--JSON-Fast%20Serialization-blue)](https://github.com/goccy/go-json)
 [![Query Builder](https://img.shields.io/badge/Squirrel-SQL%20Query%20Builder-blue)](https://github.com/Masterminds/squirrel)
 [![Database Migrations](https://img.shields.io/badge/Migrations-Seamless%20Schema%20Updates-blue)](https://github.com/golang-migrate/migrate)
 [![Logging](https://img.shields.io/badge/ZeroLog-Structured%20Logging-blue)](https://github.com/rs/zerolog)
-[![Metrics](https://img.shields.io/badge/Prometheus-Metrics%20Integration-blue)](https://github.com/ansrivas/fiberprometheus)
+[![Metrics](https://img.shields.io/badge/Prometheus-Metrics%20Integration-blue)](https://github.com/prometheus/client_golang)
 [![Tracing](https://img.shields.io/badge/OpenTelemetry-Distributed%20Tracing-blue)](https://opentelemetry.io/)
 [![Testing](https://img.shields.io/badge/Testify-Testing%20Framework-blue)](https://github.com/stretchr/testify)
 [![Mocking](https://img.shields.io/badge/Mock-Mocking%20Library-blue)](https://go.uber.org/mock)
@@ -43,7 +43,7 @@ This template implements four types of servers:
 - MQ RPC (based on NATS as [transport](https://github.com/nats-io/nats.go)
   and [Request-Reply pattern](https://www.enterpriseintegrationpatterns.com/patterns/messaging/RequestReply.html))
 - gRPC ([gRPC](https://grpc.io/) framework based on protobuf)
-- REST API ([Fiber](https://github.com/gofiber/fiber) framework)
+- REST API ([Gin](https://github.com/gin-gonic/gin) framework)
 
 The template includes three domains to demonstrate multi-service architecture:
 
@@ -165,7 +165,7 @@ Distributed tracing is provided by [OpenTelemetry](https://opentelemetry.io/). S
 collector — [Jaeger](https://www.jaegertracing.io/) in the docker stack.
 
 - **Context propagation** — W3C `traceparent` + `baggage`, so a single trace spans all four transports. REST uses
-  the [otelfiber](https://github.com/gofiber/contrib/tree/main/otelfiber) middleware, gRPC uses the
+  the [otelgin](https://github.com/open-telemetry/opentelemetry-go-contrib/tree/main/instrumentation/github.com/gin-gonic/gin/otelgin) middleware, gRPC uses the
   [otelgrpc](https://github.com/open-telemetry/opentelemetry-go-contrib) stats handler, and AMQP RPC / NATS RPC carry the
   trace context in message headers via custom carriers (`pkg/rabbitmq/rmq_rpc/otel_carrier.go`,
   `pkg/nats/nats_rpc/otel_carrier.go`).
@@ -252,7 +252,7 @@ Server handler layer (MVC controllers). The template shows 4 servers:
 - AMQP RPC (based on RabbitMQ as transport)
 - NATS RPC (based on NATS as transport)
 - gRPC ([gRPC](https://grpc.io/) framework based on protobuf)
-- REST API ([Fiber](https://github.com/gofiber/fiber) framework)
+- REST API ([Gin](https://github.com/gin-gonic/gin) framework)
 
 Server routers are written in the same style:
 
@@ -336,7 +336,7 @@ apiV2Group := app.Group("/v2")
 }
 ```
 
-Instead of [Fiber](https://github.com/gofiber/fiber), you can use any other http framework.
+Instead of [Gin](https://github.com/gin-gonic/gin), you can use any other http framework.
 
 In `router.go` and above the handler methods, there are comments for generating swagger documentation
 using [swag](https://github.com/swaggo/swag).

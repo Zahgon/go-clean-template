@@ -88,7 +88,7 @@ func initServers(cfg *config.Config, uc useCases, jwtManager *jwt.Manager, l log
 	grpc.NewRouter(grpcServer.App, uc.translation, uc.user, uc.task, l)
 
 	// HTTP Server
-	httpServer := httpserver.New(l, httpserver.Port(cfg.HTTP.Port), httpserver.Prefork(cfg.HTTP.UsePreforkMode))
+	httpServer := httpserver.New(l, httpserver.Port(cfg.HTTP.Port))
 	restapi.NewRouter(httpServer.App, cfg, uc.translation, uc.user, uc.task, jwtManager, l)
 
 	return servers{

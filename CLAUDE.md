@@ -1,7 +1,7 @@
 # go-clean-template
 
 Go clean-architecture reference service. Three domains (`user`, `task`, `translation`) exposed
-over four transports (REST/Fiber, gRPC, RabbitMQ RPC, NATS RPC) from one shared use-case layer.
+over four transports (REST/Gin, gRPC, RabbitMQ RPC, NATS RPC) from one shared use-case layer.
 Module path: `github.com/evrone/go-clean-template`. The Go version is declared in `go.mod`.
 
 ## Commands — drive everything through the Makefile
@@ -96,7 +96,7 @@ Layout rules:
 Every controller method, on every transport, does the same six things in the same order. Copy the
 shape from a neighbouring handler in the same transport.
 
-1. **Get the caller.** REST: `ctx.Locals("userID").(string)`. gRPC: `grpcmw.UserIDFromContext(ctx)`.
+1. **Get the caller.** REST: `extractUserID(ctx)`. gRPC: `grpcmw.UserIDFromContext(ctx)`.
    AMQP / NATS: `extractUserID(d, r.j)`. A failure here is an auth error, not a 500.
 2. **Decode into a transport-local DTO** from `<transport>/v1/request/`. Never decode into an
    `entity` type, and never pass a `request.*` type into a use case.
@@ -104,9 +104,9 @@ shape from a neighbouring handler in the same transport.
    validation (required, min, max, oneof) lives here. Domain validation — anything that needs to
    know the rules, like a status transition — lives on the entity or the use case and must not be
    duplicated in the controller.
-4. **Call the use case** with the request context: `ctx.UserContext()` in Fiber (**not**
-   `ctx.Context()`, which drops the trace), the handler's `ctx` everywhere else. `context.Context`
-   is the first parameter of every method that crosses a layer.
+4. **Call the use case** with the request context: `ctx.Request.Context()` in Gin (**not** the
+   `*gin.Context` itself, which is not the request's trace-carrying context), the handler's `ctx`
+   everywhere else. `context.Context` is the first parameter of every method that crosses a layer.
 5. **Map the error.** `errors.Is` against the `entity.Err*` sentinels → a transport status. Log the
    wrapped error, return a generic message to the caller.
 6. **Encode the response.** Return an `entity` type directly only when its JSON shape is already
@@ -114,6 +114,9 @@ shape from a neighbouring handler in the same transport.
    Anything with a wrapper, a projection or a different field set gets a type in
    `<transport>/v1/response/` (`response.TaskList`, `response.Token`). gRPC always converts through
    `response.New*Response`.
+
+REST handlers are `gin.HandlerFunc` (`func(*gin.Context)`); they write the response and `return`
+rather than returning an `error`, and every failure path goes through `errorResponse`.
 
 AMQP and NATS handlers are closures returning that transport's `server.CallHandler` —
 `func(ctx, *amqp.Delivery) (any, error)` and `func(ctx, *nats.Msg) (any, error)`. Each transport

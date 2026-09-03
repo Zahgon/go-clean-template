@@ -9,25 +9,29 @@ import (
 
 	"github.com/evrone/go-clean-template/internal/controller/restapi/middleware"
 	"github.com/evrone/go-clean-template/pkg/jwt"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func newTestApp(t *testing.T) (*fiber.App, *jwt.Manager) {
+func newTestApp(t *testing.T) (*gin.Engine, *jwt.Manager) {
 	t.Helper()
 
 	jwtManager := jwt.New("test-secret", time.Hour)
 
-	app := fiber.New()
+	gin.SetMode(gin.TestMode)
+
+	app := gin.New()
 	app.Use(middleware.Auth(jwtManager))
-	app.Get("/test", func(c *fiber.Ctx) error {
-		userID, ok := c.Locals("userID").(string)
+	app.GET("/test", func(c *gin.Context) {
+		userID, ok := c.Get(middleware.UserIDKey)
 		if !ok {
-			return c.SendStatus(http.StatusUnauthorized)
+			c.Status(http.StatusUnauthorized)
+
+			return
 		}
 
-		return c.SendString(userID)
+		c.String(http.StatusOK, "%s", userID)
 	})
 
 	return app, jwtManager
@@ -81,8 +85,10 @@ func TestAuthMiddleware(t *testing.T) {
 				req.Header.Set("Authorization", localTc.authHeader)
 			}
 
-			resp, err := app.Test(req)
-			require.NoError(t, err)
+			rec := httptest.NewRecorder()
+			app.ServeHTTP(rec, req)
+
+			resp := rec.Result()
 
 			defer resp.Body.Close()
 

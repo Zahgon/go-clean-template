@@ -8,14 +8,14 @@
 [![License](https://img.shields.io/badge/License-MIT-success)](https://github.com/evrone/go-clean-template/blob/master/LICENSE)
 [![codecov](https://codecov.io/gh/evrone/go-clean-template/branch/master/graph/badge.svg?token=XE3E0X3EVQ)](https://codecov.io/gh/evrone/go-clean-template)
 
-[![Web Framework](https://img.shields.io/badge/Fiber-Web%20Framework-blue)](https://github.com/gofiber/fiber)
+[![Web Framework](https://img.shields.io/badge/Gin-Web%20Framework-blue)](https://github.com/gin-gonic/gin)
 [![API Documentation](https://img.shields.io/badge/Swagger-API%20Documentation-blue)](https://github.com/swaggo/swag)
 [![Validation](https://img.shields.io/badge/Validator-Data%20Integrity-blue)](https://github.com/go-playground/validator)
 [![JSON Handling](https://img.shields.io/badge/Go--JSON-Fast%20Serialization-blue)](https://github.com/goccy/go-json)
 [![Query Builder](https://img.shields.io/badge/Squirrel-SQL%20Query%20Builder-blue)](https://github.com/Masterminds/squirrel)
 [![Database Migrations](https://img.shields.io/badge/Migrations-Seamless%20Schema%20Updates-blue)](https://github.com/golang-migrate/migrate)
 [![Logging](https://img.shields.io/badge/ZeroLog-Structured%20Logging-blue)](https://github.com/rs/zerolog)
-[![Metrics](https://img.shields.io/badge/Prometheus-Metrics%20Integration-blue)](https://github.com/ansrivas/fiberprometheus)
+[![Metrics](https://img.shields.io/badge/Prometheus-Metrics%20Integration-blue)](https://github.com/prometheus/client_golang)
 [![Tracing](https://img.shields.io/badge/OpenTelemetry-Distributed%20Tracing-blue)](https://opentelemetry.io/)
 [![Testing](https://img.shields.io/badge/Testify-Testing%20Framework-blue)](https://github.com/stretchr/testify)
 [![Mocking](https://img.shields.io/badge/Mock-Mocking%20Library-blue)](https://go.uber.org/mock)
@@ -38,7 +38,7 @@
 - NATS RPC (на основе NATS в качестве [транспорта](https://github.com/nats-io/nats.go)
   и [Request-Reply паттерна]((https://www.enterpriseintegrationpatterns.com/patterns/messaging/RequestReply.html))))
 - gRPC ([gRPC](https://grpc.io/) фреймворк на основе protobuf)
-- REST API ([Fiber](https://github.com/gofiber/fiber) фреймворк)
+- REST API ([Gin](https://github.com/gin-gonic/gin) фреймворк)
 
 Шаблон включает три домена для демонстрации многосервисной архитектуры:
 
@@ -160,7 +160,7 @@ make compose-up-all
 OTLP/gRPC в коллектор — [Jaeger](https://www.jaegertracing.io/) в docker-стеке.
 
 - **Проброс контекста** — W3C `traceparent` + `baggage`, поэтому один трейс охватывает все четыре транспорта. REST
-  использует middleware [otelfiber](https://github.com/gofiber/contrib/tree/main/otelfiber), gRPC — stats handler
+  использует middleware [otelgin](https://github.com/open-telemetry/opentelemetry-go-contrib/tree/main/instrumentation/github.com/gin-gonic/gin/otelgin), gRPC — stats handler
   [otelgrpc](https://github.com/open-telemetry/opentelemetry-go-contrib), а AMQP RPC / NATS RPC переносят trace-контекст
   в заголовках сообщений через собственные carrier'ы (`pkg/rabbitmq/rmq_rpc/otel_carrier.go`,
   `pkg/nats/nats_rpc/otel_carrier.go`).
@@ -247,7 +247,7 @@ go run -tags migrate ./cmd/app
 - AMQP RPC (на основе RabbitMQ в качестве транспорта)
 - NATS RPC (на основе NATS в качестве транспорта)
 - gRPC ([gRPC](https://grpc.io/) фреймворк на основе protobuf)
-- REST API ([Fiber](https://github.com/gofiber/fiber) фреймворк)
+- REST API ([Gin](https://github.com/gin-gonic/gin) фреймворк)
 
 Маршрутизаторы http сервера пишутся в едином стиле:
 
@@ -331,7 +331,7 @@ apiV2Group := app.Group("/v2")
 }
 ```
 
-Вместо [Fiber](https://github.com/gofiber/fiber) можно использовать любой другой http фреймворк.
+Вместо [Gin](https://github.com/gin-gonic/gin) можно использовать любой другой http фреймворк.
 
 В файле `router.go` над хэндлером написаны комментарии для генерации документации через
 swagger [swag](https://github.com/swaggo/swag).

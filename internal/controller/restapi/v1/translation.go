@@ -6,7 +6,7 @@ import (
 	"github.com/evrone/go-clean-template/internal/controller/restapi/v1/request"
 	_ "github.com/evrone/go-clean-template/internal/controller/restapi/v1/response" // for swaggo
 	"github.com/evrone/go-clean-template/internal/entity"
-	"github.com/gofiber/fiber/v2"
+	"github.com/gin-gonic/gin"
 )
 
 // @Summary     Show history
@@ -19,20 +19,23 @@ import (
 // @Failure     500 {object} response.Error
 // @Security    BearerAuth
 // @Router      /translation/history [get]
-func (r *V1) history(ctx *fiber.Ctx) error {
-	userID, ok := ctx.Locals("userID").(string)
+func (r *V1) history(ctx *gin.Context) {
+	userID, ok := extractUserID(ctx)
 	if !ok {
-		return errorResponse(ctx, http.StatusUnauthorized, "unauthorized")
+		errorResponse(ctx, http.StatusUnauthorized, "unauthorized")
+
+		return
 	}
 
-	translationHistory, err := r.t.History(ctx.UserContext(), userID)
+	translationHistory, err := r.t.History(ctx.Request.Context(), userID)
 	if err != nil {
 		r.l.Error(err, "restapi - v1 - history")
+		errorResponse(ctx, http.StatusInternalServerError, "database problems")
 
-		return errorResponse(ctx, http.StatusInternalServerError, "database problems")
+		return
 	}
 
-	return ctx.Status(http.StatusOK).JSON(translationHistory)
+	ctx.JSON(http.StatusOK, translationHistory)
 }
 
 // @Summary     Translate
@@ -48,28 +51,32 @@ func (r *V1) history(ctx *fiber.Ctx) error {
 // @Failure     500     {object} response.Error
 // @Security    BearerAuth
 // @Router      /translation/do-translate [post]
-func (r *V1) doTranslate(ctx *fiber.Ctx) error {
-	userID, ok := ctx.Locals("userID").(string)
+func (r *V1) doTranslate(ctx *gin.Context) {
+	userID, ok := extractUserID(ctx)
 	if !ok {
-		return errorResponse(ctx, http.StatusUnauthorized, "unauthorized")
+		errorResponse(ctx, http.StatusUnauthorized, "unauthorized")
+
+		return
 	}
 
 	var body request.Translate
 
-	if err := ctx.BodyParser(&body); err != nil {
+	if err := ctx.ShouldBindJSON(&body); err != nil {
 		r.l.Error(err, "restapi - v1 - doTranslate")
+		errorResponse(ctx, http.StatusBadRequest, "invalid request body")
 
-		return errorResponse(ctx, http.StatusBadRequest, "invalid request body")
+		return
 	}
 
 	if err := r.v.Struct(body); err != nil {
 		r.l.Error(err, "restapi - v1 - doTranslate")
+		errorResponse(ctx, http.StatusBadRequest, "invalid request body")
 
-		return errorResponse(ctx, http.StatusBadRequest, "invalid request body")
+		return
 	}
 
 	translation, err := r.t.Translate(
-		ctx.UserContext(),
+		ctx.Request.Context(),
 		userID,
 		entity.Translation{
 			Source:      body.Source,
@@ -79,9 +86,10 @@ func (r *V1) doTranslate(ctx *fiber.Ctx) error {
 	)
 	if err != nil {
 		r.l.Error(err, "restapi - v1 - doTranslate")
+		errorResponse(ctx, http.StatusInternalServerError, "translation service problems")
 
-		return errorResponse(ctx, http.StatusInternalServerError, "translation service problems")
+		return
 	}
 
-	return ctx.Status(http.StatusOK).JSON(translation)
+	ctx.JSON(http.StatusOK, translation)
 }
